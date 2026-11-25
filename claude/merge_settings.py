@@ -5,7 +5,8 @@
 
 Missing keys are added and existing scalar values win, so a plugin the user disabled stays
 disabled. String lists (permissions) gain missing items. Hook entries are added unless an entry
-with the same matcher already runs the same command. Running it twice changes nothing.
+with the same matcher already runs the same command; an ai-hooks command from another checkout
+path is replaced rather than duplicated. Running it twice changes nothing.
 
 Usage: merge_settings.py FRAGMENT TARGET --set NAME=VALUE ... [--dry-run]
 """
@@ -16,8 +17,9 @@ import argparse
 import json
 import os
 import sys
+import re
 import tempfile
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 
 def substitute(value: Any, names: Dict[str, str]) -> Any:
@@ -36,11 +38,43 @@ def _commands(entry: Dict[str, Any]) -> List[str]:
     return [h.get("command", "") for h in entry.get("hooks", []) if isinstance(h, dict)]
 
 
+# A hook command this tool manages: the ai-hooks launcher of some checkout, then its arguments.
+MANAGED = re.compile(r"^\S*/hooks/bin/ai-hooks (?P<args>.*)$")
+
+
+def _managed_args(command: str) -> Optional[str]:
+    match = MANAGED.match(command)
+    return match.group("args") if match else None
+
+
+def _drop_moved(have: List[Dict[str, Any]], entry: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Remove ai-hooks commands with the same arguments but another launcher path, so moving
+    the checkout replaces its hooks instead of adding a second copy."""
+    wanted = {c: _managed_args(c) for c in _commands(entry)}
+    stale = {a for a in wanted.values() if a is not None}
+    if not stale:
+        return have
+    kept = []
+    for existing in have:
+        hooks = [
+            h for h in existing.get("hooks", [])
+            if not (
+                isinstance(h, dict)
+                and _managed_args(h.get("command", "")) in stale
+                and h.get("command") not in wanted
+            )
+        ]
+        if hooks or not existing.get("hooks"):
+            kept.append({**existing, "hooks": hooks} if "hooks" in existing else existing)
+    return kept
+
+
 def merge_hooks(current: Dict[str, Any], wanted: Dict[str, Any]) -> Dict[str, Any]:
     out = {event: list(entries) for event, entries in current.items()}
     for event, entries in wanted.items():
         have = out.setdefault(event, [])
         for entry in entries:
+            have = out[event] = _drop_moved(have, entry)
             matcher = entry.get("matcher")
             present = any(
                 e.get("matcher") == matcher and set(_commands(entry)) <= set(_commands(e))

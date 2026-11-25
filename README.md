@@ -159,6 +159,7 @@ marketplace, and installs the git hooks. See `sync/bootstrap.sh --help`.
 
 ```sh
 (cd hooks && python3 -m unittest discover -s tests)
+python3 -m unittest discover -s claude/tests
 bash sync/tests/test_sync.sh
 python3 tools/check_skills.py plugins --strict-budget
 python3 tools/build_marketplace.py --check
