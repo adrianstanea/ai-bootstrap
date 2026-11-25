@@ -1,0 +1,29 @@
+src/logging.hpp docs/logging.md
+fix(logging): share module names across translation units
+
+The fallback logging backend defined its module macro as a no-op
+stub, so a translation unit could not reference a module registered
+elsewhere. Add a "use" macro and make module names inline constexpr
+so headers, including header-only templates, can log without an
+owning .cpp for the module symbol.
+
+Documented the new macro and header-only usage in docs/logging.md.
+---
+src/nodes/counter.hpp src/nodes/counter.cpp src/nodes/CMakeLists.txt
+refactor(nodes): make the counter node header-only
+
+Move template method bodies from the .cpp into the header so
+consumers can implicitly instantiate the template for any numeric
+type, without an explicit instantiation block in the library. The
+per-node .cpp is removed and the build target becomes an interface
+library.
+---
+tests/counter_instantiation_test.cpp tests/CMakeLists.txt
+test(nodes): prove the header-only counter instantiates for new types
+
+Add a test instantiating the counter for int16_t, a type never
+explicitly instantiated in the library, proving consumers no longer
+need explicit instantiation declarations.
+
+Also split the test source lists in tests/CMakeLists.txt per
+component and append them into the aggregate list.

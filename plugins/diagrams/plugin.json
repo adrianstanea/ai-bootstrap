@@ -1,0 +1,6 @@
+{
+  "name": "diagrams",
+  "version": "0.1.0",
+  "description": "Mermaid and Graphviz diagram authoring skills with static validators.",
+  "keywords": ["mermaid", "graphviz", "diagrams"]
+}

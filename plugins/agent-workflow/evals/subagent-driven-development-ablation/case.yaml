@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.1",
+  "name": "subagent-driven-development-ablation",
+  "description": "Outcome: delegation plan that follows the project's subagent rules.",
+  "tags": [
+    "ablation"
+  ],
+  "execution": {
+    "prompt": "I need to migrate 12 modules under src/modules/ from raw pointers to smart pointers, update their unit tests, and refresh the docs page that lists them. Give me your plan for doing this with subagents and how you will decide it is done. Do not start the work, only plan.",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?subagent-driven-development\""
+    },
+    {
+      "name": "sonnet",
+      "type": "regex",
+      "pattern": "sonnet",
+      "flags": "i",
+      "match": "contains"
+    },
+    {
+      "name": "delegation-plan",
+      "type": "llm",
+      "criteria": "The plan must include, in the project's style: (1) an evidence-based acceptance gate defined first (named tests/presets/checks, not the worker's claim); (2) one bounded task per worker with the files it owns and no two workers owning the same file; (3) a separate validator step from the implementer and a review after validation; (4) a rule that every spawned subagent sets model sonnet (opus only with explicit user approval); (5) workers never commit, push or touch PRs, the lead acts only on the user's request; (6) a cap on fix rounds (about three) before asking the user. Pass if at least 4 of 6 are present, including (1) and (4).",
+      "weight": 3
+    }
+  ]
+}

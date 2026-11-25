@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.1",
+  "name": "cpp-code-style-ablation",
+  "description": "Outcome: review of C++ against the project's naming and member-organization conventions.",
+  "tags": [
+    "ablation"
+  ],
+  "execution": {
+    "prompt": "Review this C++ class that wraps the vendor C library libfoo and tell me what you would change.\n\nclass FooSpi {\npublic:\n    int foo_read_regs(uint8_t* pData, size_t len);\n    void on_data_ready(void* ctx);\n    void start() {\n        uint8_t rxBuf[16];\n        foo_read_regs(rxBuf, sizeof(rxBuf));\n    }\nprivate:\n    int m_cs_pin;\n    int m_spi_mode;\n    int m_spi_speed_hz;\n    int m_rx_count;\n    int m_tx_count;\n    bool m_legacy_mode;   // not referenced anywhere in this file\n};",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?cpp-code-style\""
+    },
+    {
+      "name": "callback-suffix",
+      "type": "regex",
+      "pattern": "_cb",
+      "flags": "i",
+      "match": "contains"
+    },
+    {
+      "name": "conventions",
+      "type": "llm",
+      "criteria": "The review must flag all of: (1) the method name foo_read_regs reuses the vendor library's foo_ prefix so it reads like a call into libfoo, and should be renamed; (2) the callback on_data_ready should get a _cb suffix; (3) the camelCase local rxBuf (and parameter pData) should be snake_case; (4) the loose related members (cs pin/mode/speed, rx/tx counts) should be grouped into small nested structs with a one-line role comment. For the unused m_legacy_mode flag it must recommend flagging it and confirming with the author (or adding a NOTE comment) rather than silently deleting it. Pass if at least 4 of these 5 points are made, including the vendor prefix clash and the m_legacy_mode handling.",
+      "weight": 3
+    }
+  ]
+}

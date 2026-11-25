@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# Copyright (c) 2026 Adrian Stanea
+# SPDX-License-Identifier: BSD-3-Clause
+# Scans the tree of every pushed branch matching gitleaks.branches in .ai-hooks.toml with
+# gitleaks, using gitleaks.config; a repository without that setting is not scanned. The
+# repository's own pre-push hook runs afterwards with the same refs on stdin.
+set -euo pipefail
+# shellcheck source=githooks/lib.sh
+. "$(dirname "$(realpath "$0")")/lib.sh"
+
+refs=$(mktemp "${TMPDIR:-/tmp}/ai-hooks-refs.XXXXXXXX")
+trap 'rm -f -- "$refs"' EXIT
+cat > "$refs"
+
+mapfile -t branches < <(python3 "$AI_HOOKS_RUNNER" config gitleaks.branches || true)
+config_rel=$(python3 "$AI_HOOKS_RUNNER" config gitleaks.config || true)
+
+config=""
+if [[ -n "$config_rel" ]]; then
+    # A pushed branch may drop the config file, so fall back to the main checkout's copy.
+    for root in "$(git rev-parse --show-toplevel)" "$(cd "$(git rev-parse --git-common-dir)/.." && pwd)"; do
+        if [[ -f "$root/$config_rel" ]]; then config=$root/$config_rel; break; fi
+    done
+fi
+
+matches() {
+    local ref=$1 pattern
+    for pattern in "${branches[@]}"; do
+        # shellcheck disable=SC2053  # the pattern is a glob on purpose
+        [[ "$ref" == refs/heads/$pattern ]] && return 0
+    done
+    return 1
+}
+
+status=0
+if (( ${#branches[@]} )); then
+    while read -r _local_ref local_sha remote_ref _remote_sha; do
+        matches "$remote_ref" || continue
+        [[ "${local_sha//0/}" ]] || continue  # branch deletion
+        if [[ -z "$config" ]]; then
+            echo "pre-push: gitleaks.config ${config_rel:-<unset>} not found; cannot scan $remote_ref" >&2
+            exit 1
+        fi
+        if ! command -v gitleaks >/dev/null; then
+            echo "pre-push: gitleaks is required to push $remote_ref" >&2
+            exit 1
+        fi
+        tree=$(mktemp -d "${TMPDIR:-/tmp}/ai-hooks-gitleaks.XXXXXXXX")
+        git archive "$local_sha" | tar -x -C "$tree"
+        echo "pre-push: gitleaks scan of ${remote_ref#refs/heads/} at ${local_sha:0:12}" >&2
+        if ! gitleaks dir "$tree" --config "$config" --no-banner --redact=0 --verbose >&2; then
+            echo "pre-push: findings in $remote_ref; fix them or push with --no-verify after review" >&2
+            status=1
+        fi
+        rm -rf -- "$tree"
+    done < "$refs"
+fi
+(( status == 0 )) || exit "$status"
+chain_repo_hook pre-push "$@" < "$refs"

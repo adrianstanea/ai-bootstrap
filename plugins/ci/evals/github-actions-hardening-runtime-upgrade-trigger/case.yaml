@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.1",
+  "name": "github-actions-hardening-runtime-upgrade-trigger",
+  "description": "Baseline: a realistic request that should load the github-actions-hardening skill.",
+  "tags": [
+    "trigger"
+  ],
+  "execution": {
+    "prompt": "GitHub keeps warning that Node 16 actions are deprecated in our workflows. Bump actions/checkout@v3 and actions/setup-node@v3 to supported versions without changing what the workflows do.",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?github-actions-hardening\""
+    }
+  ]
+}

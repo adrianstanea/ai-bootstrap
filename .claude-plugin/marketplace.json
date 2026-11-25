@@ -1,0 +1,34 @@
+{
+  "description": "Personal project-neutral AI tooling: skills, agents and hooks.",
+  "name": "adrianstanea",
+  "owner": {
+    "name": "Adrian Stanea"
+  },
+  "plugins": [
+    {
+      "description": "Subagent-driven development skill with implementer and validator agents.",
+      "name": "agent-workflow",
+      "source": "./plugins/agent-workflow"
+    },
+    {
+      "description": "GitHub Actions skills: efficiency, hardening, runtime upgrade conventions, and workflow specifications.",
+      "name": "ci",
+      "source": "./plugins/ci"
+    },
+    {
+      "description": "Coding practice skills (Python, C++ style, fuzz regressions) and a shell script reviewer agent.",
+      "name": "dev-practices",
+      "source": "./plugins/dev-practices"
+    },
+    {
+      "description": "Mermaid and Graphviz diagram authoring skills with static validators.",
+      "name": "diagrams",
+      "source": "./plugins/diagrams"
+    },
+    {
+      "description": "Git workflow skills and PR reviewer agent: commit messages, commit planning, pull requests, and review.",
+      "name": "git-workflow",
+      "source": "./plugins/git-workflow"
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+# Follow `source=` paths and sourced files relative to the script that sources them.
+external-sources=true

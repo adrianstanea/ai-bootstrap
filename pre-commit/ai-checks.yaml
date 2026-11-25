@@ -1,0 +1,16 @@
+# Run by githooks/pre-commit: pre-commit stashes unstaged changes, then ai-hooks checks the
+# index. The zizmor entry is what the zizmor check invokes for staged workflow YAML.
+minimum_pre_commit_version: "3.2.0"
+repos:
+  - repo: local
+    hooks:
+      - id: ai-checks
+        name: ai-hooks staged checks
+        entry: sh -c 'exec python3 "$AI_HOOKS_RUNNER" git pre-commit'
+        language: system
+        pass_filenames: false
+        always_run: true
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.31.1
+    hooks:
+      - id: zizmor

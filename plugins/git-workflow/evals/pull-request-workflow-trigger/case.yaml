@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.1",
+  "name": "pull-request-workflow-trigger",
+  "description": "Baseline: a realistic request that should load the pull-request-workflow skill.",
+  "tags": [
+    "trigger"
+  ],
+  "execution": {
+    "prompt": "I have a large set of changes. Split them into three dependent branches and get PRs opened for them.",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?pull-request-workflow\""
+    }
+  ]
+}

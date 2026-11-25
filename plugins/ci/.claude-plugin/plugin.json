@@ -1,0 +1,10 @@
+{
+  "description": "GitHub Actions skills: efficiency, hardening, runtime upgrade conventions, and workflow specifications.",
+  "keywords": [
+    "github-actions",
+    "ci",
+    "security"
+  ],
+  "name": "ci",
+  "version": "0.1.0"
+}

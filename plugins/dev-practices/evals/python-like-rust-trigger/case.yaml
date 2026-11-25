@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.1",
+  "name": "python-like-rust-trigger",
+  "description": "Baseline: a realistic request that should load the python-like-rust skill.",
+  "tags": [
+    "trigger"
+  ],
+  "execution": {
+    "prompt": "This Python function returns a tuple (ok, value, err), and user ids and file paths are both passed as plain str so they get mixed up. How do I model this with dataclasses and NewType so mypy catches mistakes?",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?python-like-rust\""
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.1",
+  "name": "python-like-rust-no-trigger",
+  "description": "Baseline: a near-miss in the same domain that should not load the python-like-rust skill.",
+  "tags": [
+    "no-trigger"
+  ],
+  "execution": {
+    "prompt": "Write a Python script that reads a CSV file and prints the average of each numeric column.",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-not-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?python-like-rust\"",
+      "min": 0,
+      "max": 0,
+      "arm": "both"
+    }
+  ]
+}

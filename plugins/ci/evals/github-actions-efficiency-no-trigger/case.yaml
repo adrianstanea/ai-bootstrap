@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.1",
+  "name": "github-actions-efficiency-no-trigger",
+  "description": "Baseline: a near-miss in the same domain that should not load the github-actions-efficiency skill.",
+  "tags": [
+    "no-trigger"
+  ],
+  "execution": {
+    "prompt": "What is the YAML syntax for a build matrix with an include entry that adds one extra variable for a single combination?",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-not-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?github-actions-efficiency\"",
+      "min": 0,
+      "max": 0,
+      "arm": "both"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+# For repositories that use the pre-commit framework directly instead of core.hooksPath:
+#   - repo: https://github.com/adrianstanea/ai-bootstrap
+#     rev: <tag>
+#     hooks: [{id: ai-checks}, {id: ai-commit-msg}]
+# Install the commit-msg stage too: pre-commit install -t pre-commit -t commit-msg
+- id: ai-checks
+  name: ai-hooks staged checks
+  entry: hooks/bin/ai-hooks git pre-commit
+  language: script
+  pass_filenames: false
+  always_run: true
+  stages: [pre-commit]
+- id: ai-commit-msg
+  name: ai-hooks commit message policy
+  entry: hooks/bin/ai-hooks git commit-msg
+  language: script
+  stages: [commit-msg]

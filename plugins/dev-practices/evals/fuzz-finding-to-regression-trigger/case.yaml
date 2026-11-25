@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.1",
+  "name": "fuzz-finding-to-regression-trigger",
+  "description": "A request that should load the fuzz-finding-to-regression skill.",
+  "tags": [
+    "trigger"
+  ],
+  "execution": {
+    "prompt": "host_runtime_fuzzer just crashed. ASan says: heap-buffer-overflow READ of size 4 in message_codec::decode_header (message_codec.cpp:88), and libFuzzer wrote crash-3f2a9c. Reproduce it, find the root cause and turn it into a fix with a regression test.",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?fuzz-finding-to-regression\""
+    }
+  ]
+}

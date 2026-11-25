@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.1",
+  "name": "mermaid-diagrams-no-trigger",
+  "description": "Baseline: a near-miss in the same domain that should not load the mermaid-diagrams skill.",
+  "tags": [
+    "no-trigger"
+  ],
+  "execution": {
+    "prompt": "Plot a matplotlib bar chart of benchmark timings for three compilers.",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-not-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?mermaid-diagrams\"",
+      "min": 0,
+      "max": 0,
+      "arm": "both"
+    }
+  ]
+}

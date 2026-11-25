@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.1",
+  "name": "git-commit-messages-no-trigger",
+  "description": "Baseline: a near-miss in the same domain that should not load the git-commit-messages skill.",
+  "tags": [
+    "no-trigger"
+  ],
+  "execution": {
+    "prompt": "Write a changelog entry for release 1.2 summarizing the new features.",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-not-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?git-commit-messages\"",
+      "min": 0,
+      "max": 0,
+      "arm": "both"
+    }
+  ]
+}

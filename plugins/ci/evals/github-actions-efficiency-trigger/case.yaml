@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.1",
+  "name": "github-actions-efficiency-trigger",
+  "description": "Baseline: a realistic request that should load the github-actions-efficiency skill.",
+  "tags": [
+    "trigger"
+  ],
+  "execution": {
+    "prompt": "Our CI bill is exploding: PR workflows take 40 minutes and rerun the full build matrix even for docs-only changes. Where is the waste in our GitHub Actions setup and what should we change?",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?github-actions-efficiency\""
+    }
+  ]
+}

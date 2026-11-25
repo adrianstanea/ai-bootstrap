@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.1",
+  "name": "pr-review-trigger",
+  "description": "Baseline: a realistic request that should load the pr-review skill.",
+  "tags": [
+    "trigger"
+  ],
+  "execution": {
+    "prompt": "Review my branch against main before I open the PR and check it against the project's conventions.",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?pr-review\""
+    }
+  ]
+}

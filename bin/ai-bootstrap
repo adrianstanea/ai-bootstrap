@@ -1,0 +1,169 @@
+#!/usr/bin/env bash
+# Copyright (c) 2026 Adrian Stanea
+# SPDX-License-Identifier: BSD-3-Clause
+# Personal AI tooling, machine and project setup.
+#
+# Usage:
+#   ai-bootstrap user [--dry-run] [--skip-plugins] [--skip-skills] [--skip-worktree-sync]
+#       Machine setup, safe to re-run:
+#         1. link the ai-hooks launcher into ~/.local/bin
+#         2. import claude/CLAUDE.md from a managed block in ~/.claude/CLAUDE.md
+#         3. merge claude/settings.fragment.json into ~/.claude/settings.json
+#         4. register this checkout as the "adrianstanea" plugin marketplace and install its
+#            plugins at user scope (needs the claude CLI)
+#         5. install external-skills.json at user scope (needs gh >= 2.90)
+#         6. install the global SessionStart hook that re-syncs linked worktrees
+#   ai-bootstrap project --config <config-repo> --target <checkout> [options]
+#       Configure one checkout from a project config repo; see sync/bootstrap.sh --help.
+#
+# Env overrides: CLAUDE_BIN, GH_BIN.
+# Exit codes: 0 ok, 1 a step failed, 2 usage error.
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/.." && pwd)"
+LAUNCHER="$ROOT/hooks/bin/ai-hooks"
+MARKETPLACE="adrianstanea"
+BEGIN_MARK="<!-- BEGIN ai-bootstrap (managed; edit $ROOT/claude/CLAUDE.md instead) -->"
+END_MARK="<!-- END ai-bootstrap -->"
+
+usage() { sed -n '2,/^$/p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
+
+DRY=0
+FAILED=0
+run() {
+    if [[ $DRY -eq 1 ]]; then
+        printf '[dry-run]'; printf ' %q' "$@"; printf '\n'
+        return 0
+    fi
+    "$@"
+}
+
+link_launcher() {
+    echo "== 1/6 ai-hooks on PATH"
+    run mkdir -p "$HOME/.local/bin"
+    run ln -sfn "$LAUNCHER" "$HOME/.local/bin/ai-hooks"
+    case ":$PATH:" in
+        *":$HOME/.local/bin:"*) ;;
+        *) echo "warning: $HOME/.local/bin is not on PATH" >&2 ;;
+    esac
+}
+
+import_rules() {
+    echo "== 2/6 personal rules in ~/.claude/CLAUDE.md"
+    local file="$HOME/.claude/CLAUDE.md" block
+    block="$BEGIN_MARK"$'\n'"@$ROOT/claude/CLAUDE.md"$'\n'"$END_MARK"
+    if [[ $DRY -eq 1 ]]; then
+        echo "[dry-run] write the managed block into $file"
+        return 0
+    fi
+    mkdir -p "$HOME/.claude"
+    touch "$file"
+    BLOCK="$block" BEGIN_MARK="$BEGIN_MARK" END_MARK="$END_MARK" python3 -I - "$file" <<'PY'
+import os, re, sys
+path = sys.argv[1]
+text = open(path).read()
+begin = re.escape("<!-- BEGIN ai-bootstrap")
+pattern = re.compile(begin + r".*?" + re.escape(os.environ["END_MARK"]), re.S)
+block = os.environ["BLOCK"]
+if pattern.search(text):
+    new = pattern.sub(lambda _: block, text, count=1)
+else:
+    new = (text.rstrip("\n") + "\n\n" if text.strip() else "") + block + "\n"
+if new != text:
+    open(path, "w").write(new)
+    print(f"{path}: updated")
+else:
+    print(f"{path}: up to date")
+PY
+}
+
+merge_settings() {
+    echo "== 3/6 ~/.claude/settings.json"
+    local args=("$ROOT/claude/settings.fragment.json" "$HOME/.claude/settings.json"
+        --set "AI_HOOKS=$LAUNCHER")
+    [[ $DRY -eq 1 ]] && args+=(--dry-run)
+    python3 -I "$ROOT/claude/merge_settings.py" "${args[@]}"
+}
+
+install_plugins() {
+    echo "== 4/6 plugins from the $MARKETPLACE marketplace"
+    local claude="${CLAUDE_BIN:-${CLAUDE_CODE_EXECPATH:-claude}}"
+    if ! command -v "$claude" >/dev/null 2>&1; then
+        echo "SKIPPED plugins: claude CLI not found (set CLAUDE_BIN)"
+        return 0
+    fi
+    if "$claude" plugin marketplace list 2>/dev/null | grep -q -- "$MARKETPLACE"; then
+        run "$claude" plugin marketplace update "$MARKETPLACE" >/dev/null || FAILED=1
+    else
+        run "$claude" plugin marketplace add "$ROOT" || FAILED=1
+    fi
+    local plugin
+    while IFS= read -r plugin; do
+        if run "$claude" plugin install "$plugin@$MARKETPLACE" --scope user >/dev/null; then
+            echo "-> $plugin@$MARKETPLACE"
+        else
+            echo "error: failed to install $plugin@$MARKETPLACE" >&2
+            FAILED=1
+        fi
+    done < <(python3 -I -c 'import json,sys
+for p in json.load(open(sys.argv[1]))["plugins"]: print(p["name"])' \
+        "$ROOT/.claude-plugin/marketplace.json")
+}
+
+install_skills() {
+    echo "== 5/6 external skills (user scope)"
+    local gh="${GH_BIN:-gh}"
+    if ! command -v "$gh" >/dev/null 2>&1; then
+        echo "SKIPPED external skills: gh not found"
+        return 0
+    fi
+    local repo skill pin cmd
+    while IFS=$'\t' read -r repo skill pin; do
+        cmd=("$gh" skill install "$repo" "$skill" --agent claude-code --scope user --force)
+        [[ "$pin" != "-" ]] && cmd+=(--pin "$pin")
+        if run "${cmd[@]}" </dev/null >/dev/null 2>&1; then
+            echo "-> $repo $skill${pin#-}"
+        else
+            echo "error: failed to install $repo $skill" >&2
+            FAILED=1
+        fi
+    done < <(python3 -I -c 'import json,sys
+for s in json.load(open(sys.argv[1]))["skills"]:
+    print("\t".join([s["repo"], s["skill"], s.get("pin") or "-"]))' "$ROOT/external-skills.json")
+}
+
+install_worktree_sync() {
+    echo "== 6/6 global worktree sync hook"
+    run "$ROOT/sync/install-global-worktree-sync.sh"
+}
+
+cmd_user() {
+    local skip_plugins=0 skip_skills=0 skip_sync=0
+    while (($#)); do
+        case "$1" in
+            --dry-run) DRY=1 ;;
+            --skip-plugins) skip_plugins=1 ;;
+            --skip-skills) skip_skills=1 ;;
+            --skip-worktree-sync) skip_sync=1 ;;
+            -h|--help) usage; exit 0 ;;
+            *) echo "error: unknown option: $1" >&2; exit 2 ;;
+        esac
+        shift
+    done
+    link_launcher
+    import_rules
+    merge_settings
+    [[ $skip_plugins -eq 1 ]] && echo "SKIPPED plugins (--skip-plugins)" || install_plugins
+    [[ $skip_skills -eq 1 ]] && echo "SKIPPED external skills (--skip-skills)" || install_skills
+    [[ $skip_sync -eq 1 ]] && echo "SKIPPED worktree sync (--skip-worktree-sync)" \
+        || install_worktree_sync
+    return "$FAILED"
+}
+
+case "${1:-}" in
+    user) shift; cmd_user "$@" ;;
+    project) shift; exec "$ROOT/sync/bootstrap.sh" "$@" ;;
+    -h|--help|"") usage; [[ -n "${1:-}" ]] || exit 2 ;;
+    *) echo "error: unknown command: $1" >&2; usage >&2; exit 2 ;;
+esac

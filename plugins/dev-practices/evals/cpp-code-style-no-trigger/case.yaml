@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.1",
+  "name": "cpp-code-style-no-trigger",
+  "description": "Baseline: a near-miss in the same domain that should not load the cpp-code-style skill.",
+  "tags": [
+    "no-trigger"
+  ],
+  "execution": {
+    "prompt": "Why does my C++ template function fail with 'no matching function for call' when I pass it a lambda?",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-not-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?cpp-code-style\"",
+      "min": 0,
+      "max": 0,
+      "arm": "both"
+    }
+  ]
+}

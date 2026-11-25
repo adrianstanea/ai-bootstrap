@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.1",
+  "name": "gh-trigger",
+  "description": "Baseline: a realistic request that should load the gh skill.",
+  "tags": [
+    "trigger"
+  ],
+  "execution": {
+    "prompt": "Use gh to list the open pull requests whose checks are failing and show me the log of the latest failed workflow run.",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?gh\""
+    }
+  ]
+}

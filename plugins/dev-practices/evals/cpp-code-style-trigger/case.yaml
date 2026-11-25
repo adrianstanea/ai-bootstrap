@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.1",
+  "name": "cpp-code-style-trigger",
+  "description": "Baseline: a realistic request that should load the cpp-code-style skill.",
+  "tags": [
+    "trigger"
+  ],
+  "execution": {
+    "prompt": "Review this C++ class that wraps a vendor C driver API for naming and member layout:\n\nclass Spi { public: int foo_read(uint8_t* p); private: int m_cs; int m_mode; int m_speed; };",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?cpp-code-style\""
+    }
+  ]
+}

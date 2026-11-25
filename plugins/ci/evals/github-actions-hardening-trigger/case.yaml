@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.1",
+  "name": "github-actions-hardening-trigger",
+  "description": "Baseline: a realistic request that should load the github-actions-hardening skill.",
+  "tags": [
+    "trigger"
+  ],
+  "execution": {
+    "prompt": "We use pull_request_target in a workflow that checks out the PR head and runs npm test with a deploy token in env. Is this safe? Review it for security problems.",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?github-actions-hardening\""
+    }
+  ]
+}

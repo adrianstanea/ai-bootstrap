@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.1",
+  "name": "mermaid-diagrams-trigger",
+  "description": "Baseline: a realistic request that should load the mermaid-diagrams skill.",
+  "tags": [
+    "trigger"
+  ],
+  "execution": {
+    "prompt": "Add a Mermaid state machine diagram to the README that shows a node's lifecycle: created, configured, running, stopped.",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?mermaid-diagrams\""
+    }
+  ]
+}

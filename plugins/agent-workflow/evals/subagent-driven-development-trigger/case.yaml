@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.1",
+  "name": "subagent-driven-development-trigger",
+  "description": "Baseline: a realistic request that should load the subagent-driven-development skill.",
+  "tags": [
+    "trigger"
+  ],
+  "execution": {
+    "prompt": "This refactor touches 15 files across src/core and src/modules. Use subagents to parallelize it, with a lead that only accepts results against tests.",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?subagent-driven-development\""
+    }
+  ]
+}

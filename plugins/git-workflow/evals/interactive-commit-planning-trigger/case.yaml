@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.1",
+  "name": "interactive-commit-planning-trigger",
+  "description": "Baseline: a realistic request that should load the interactive-commit-planning skill.",
+  "tags": [
+    "trigger"
+  ],
+  "execution": {
+    "prompt": "I have lots of uncommitted changes across cmake files, docs and C++ sources. Group them into logical commits and walk me through committing them one at a time.",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?interactive-commit-planning\""
+    }
+  ]
+}

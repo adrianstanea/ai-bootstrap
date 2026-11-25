@@ -1,0 +1,90 @@
+#!/usr/bin/env python3
+# Copyright (c) 2026 Adrian Stanea
+# SPDX-License-Identifier: BSD-3-Clause
+"""Launcher for the ai-hooks runner; see README.md, "Hooks only make sense in the synced destination".
+
+Startup cost matters because hooks fire on every tool call, so this file uses only `os` and `sys`
+until it knows the package is needed.
+"""
+
+import os
+import sys
+
+
+def _find_dot_git(start):
+    """Nearest ancestor of start (inclusive) that contains `.git`, as (directory, .git path)."""
+    current = os.path.abspath(start)
+    while True:
+        candidate = os.path.join(current, ".git")
+        if os.path.exists(candidate):
+            return current, candidate
+        parent = os.path.dirname(current)
+        if parent == current:
+            return None, None
+        current = parent
+
+
+def _read(path):
+    with open(path) as handle:
+        return handle.read().strip()
+
+
+def git_common_dir(start):
+    """The repository's common git directory, found by reading files rather than running git."""
+    try:
+        top, dot_git = _find_dot_git(start)
+        if dot_git is None:
+            return None
+        if os.path.isdir(dot_git):
+            return dot_git
+        text = _read(dot_git)
+        if not text.startswith("gitdir:"):
+            return None
+        gitdir = os.path.join(top, text[len("gitdir:"):].strip())
+        try:
+            common = os.path.join(gitdir, _read(os.path.join(gitdir, "commondir")))
+        except OSError:
+            common = gitdir
+        return os.path.realpath(common)
+    except OSError:
+        return None
+
+
+def pycache_prefix(launcher_realpath):
+    """Bytecode cache outside the synced clone: the git dir, else the user cache directory."""
+    common = git_common_dir(os.path.dirname(launcher_realpath))
+    if common:
+        return os.path.join(common, "ai-hooks", "pycache")
+    cache = os.environ.get("XDG_CACHE_HOME") or os.path.join(os.path.expanduser("~"), ".cache")
+    return os.path.join(cache, "ai-hooks", "pycache")
+
+
+def graphify_guard(argv):
+    """`graphify-guard MODE`: do nothing unless the repo has a graph, else exec graphify."""
+    if len(argv) != 2 or argv[0] != "graphify-guard" or argv[1] not in ("search", "read"):
+        return False
+    base = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
+    top, _ = _find_dot_git(base)
+    if top is None or not os.path.isfile(os.path.join(top, "graphify-out", "graph.json")):
+        sys.exit(0)
+    try:
+        os.execvp("graphify", ["graphify", "hook-guard", argv[1]])
+    except OSError:
+        sys.exit(0)
+    return True
+
+
+def main():
+    if graphify_guard(sys.argv[1:]):
+        return 0
+    # The package lives in the ai-config clone behind symlinks; keep bytecode out of it.
+    sys.pycache_prefix = pycache_prefix(os.path.realpath(__file__))
+    sys.dont_write_bytecode = False
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+    from ai_hooks.cli import main as cli_main
+
+    return cli_main()
+
+
+if __name__ == "__main__":
+    sys.exit(main())

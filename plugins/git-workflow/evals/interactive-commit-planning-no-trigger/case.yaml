@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.1",
+  "name": "interactive-commit-planning-no-trigger",
+  "description": "Baseline: a near-miss in the same domain that should not load the interactive-commit-planning skill.",
+  "tags": [
+    "no-trigger"
+  ],
+  "execution": {
+    "prompt": "How do I undo my last commit but keep the changes in the working tree?",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-not-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?interactive-commit-planning\"",
+      "min": 0,
+      "max": 0,
+      "arm": "both"
+    }
+  ]
+}

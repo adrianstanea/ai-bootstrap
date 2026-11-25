@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.1",
+  "name": "pull-request-workflow-no-trigger",
+  "description": "Baseline: a near-miss in the same domain that should not load the pull-request-workflow skill.",
+  "tags": [
+    "no-trigger"
+  ],
+  "execution": {
+    "prompt": "Review PR #42 and tell me about any bugs you see in it.",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-not-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?pull-request-workflow\"",
+      "min": 0,
+      "max": 0,
+      "arm": "both"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "description": "Coding practice skills (Python, C++ style, fuzz regressions) and a shell script reviewer agent.",
+  "keywords": [
+    "python",
+    "cpp",
+    "fuzzing",
+    "shell"
+  ],
+  "name": "dev-practices",
+  "version": "0.1.0"
+}

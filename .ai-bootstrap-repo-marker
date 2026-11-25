@@ -1,0 +1,5 @@
+Marks the root of the ai-bootstrap repository itself.
+
+The ai-hooks commit policy applies here as in any configured repository, but the
+githooks-path check leaves core.hooksPath alone: this checkout is the source of the hooks,
+not a repository that consumes them.

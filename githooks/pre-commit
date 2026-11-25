@@ -1,0 +1,10 @@
+#!/bin/sh
+# Copyright (c) 2026 Adrian Stanea
+# SPDX-License-Identifier: BSD-3-Clause
+# ai-hooks pre-commit stage. It runs through pre-commit, which hides unstaged changes, so the
+# checks see exactly what git will commit; the repository's own hook runs afterwards.
+set -eu
+. "$(dirname "$(realpath "$0")")/lib.sh"
+export AI_HOOKS_PRE_COMMIT_CONFIG="$AI_BOOTSTRAP_ROOT/pre-commit/ai-checks.yaml"
+uvx pre-commit run ai-checks --config "$AI_HOOKS_PRE_COMMIT_CONFIG" --hook-stage pre-commit
+chain_repo_hook pre-commit "$@"

@@ -1,0 +1,8 @@
+#!/bin/sh
+# Copyright (c) 2026 Adrian Stanea
+# SPDX-License-Identifier: BSD-3-Clause
+# ai-hooks commit-msg stage, then the repository's own commit-msg hook.
+set -eu
+. "$(dirname "$(realpath "$0")")/lib.sh"
+python3 "$AI_HOOKS_RUNNER" git commit-msg "$1"
+chain_repo_hook commit-msg "$@"

@@ -1,0 +1,32 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "ai-hooks hook SessionStart",
+        "timeout": 120
+      }
+    ],
+    "PreToolUse": [
+      {
+        "type": "command",
+        "command": "ai-hooks hook PreToolUse",
+        "timeout": 10
+      }
+    ],
+    "PostToolUse": [
+      {
+        "type": "command",
+        "command": "ai-hooks hook PostToolUse",
+        "timeout": 120
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "ai-hooks hook Stop",
+        "timeout": 300
+      }
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "description": "Subagent-driven development skill with implementer and validator agents.",
+  "keywords": [
+    "agents",
+    "subagents",
+    "workflow"
+  ],
+  "name": "agent-workflow",
+  "version": "0.1.0"
+}

@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Project overlay for `skillevaluator quality-check --quality-config`. Omitted keys keep the
+# packaged defaults. Deviations follow the Agent Skills spec and Anthropic's authoring guidance:
+# - Only `## Limitations` is required; Prerequisites and Troubleshooting sections
+#   become boilerplate in short guide skills, and `compatibility` carries real prerequisites.
+# - Descriptions may hold "what + when + when not" up to 600 chars (spec max 1024); the
+#   combined listing budget is enforced by tools/check_skills.py instead.
+# The hardcoded `metadata.tags`/`metadata.author` and `## Purpose` findings cannot be turned off
+# here; `metadata.tags` as a list conflicts with the spec's string-to-string `metadata`, so those
+# findings are accepted as noise.
+expected_headers:
+  - heading: "## Limitations"
+    points: 5
+    message: "No limitations documented"
+    suggestion: "Add '## Limitations' with what the skill does not cover"
+
+discoverability:
+  description_too_long:
+    max_chars: 600
+    message: "Description over 600 chars"
+    suggestion: "Front-load the trigger; keep what + when + when-not concise"

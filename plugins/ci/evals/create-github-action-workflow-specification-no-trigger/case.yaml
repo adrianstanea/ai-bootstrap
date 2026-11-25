@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.1",
+  "name": "create-github-action-workflow-specification-no-trigger",
+  "description": "Baseline: a near-miss in the same domain that should not load the create-github-action-workflow-specification skill.",
+  "tags": [
+    "no-trigger"
+  ],
+  "execution": {
+    "prompt": "Add a job to my existing release workflow that uploads the coverage report to Codecov after the tests job finishes.",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-not-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?create-github-action-workflow-specification\"",
+      "min": 0,
+      "max": 0,
+      "arm": "both"
+    }
+  ]
+}

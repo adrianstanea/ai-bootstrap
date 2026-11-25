@@ -1,0 +1,69 @@
+{
+  "_comment": "Third-party skills installed at user scope by `ai-bootstrap user` via `gh skill install` (gh >= 2.90). dir is the folder created under ~/.claude/skills (last path segment of the upstream skill, not its frontmatter name). pin: git ref to freeze, or null to track the latest tag/HEAD. Claude Code registers project skills by directory name, so refer to them by dir (e.g. code-quality), not by the frontmatter name.",
+  "skills": [
+    {
+      "repo": "github/gh-stack",
+      "skill": "gh-stack",
+      "dir": "gh-stack",
+      "name": "gh-stack",
+      "pin": null,
+      "why": "Local branch-stack workflow used by the pull-request-workflow skill."
+    },
+    {
+      "repo": "pydantic/skills",
+      "skill": "pydantic",
+      "dir": "pydantic",
+      "name": "pydantic",
+      "pin": null,
+      "why": "Pydantic v2 modelling guidance for Python projects."
+    },
+    {
+      "repo": "wdm0006/python-skills",
+      "skill": "code-quality",
+      "dir": "code-quality",
+      "name": "improving-python-code-quality",
+      "pin": null,
+      "why": "General Python quality and lint practices."
+    },
+    {
+      "repo": "wdm0006/python-skills",
+      "skill": "api-design",
+      "dir": "api-design",
+      "name": "designing-python-apis",
+      "pin": null,
+      "why": "Python library API design guidance."
+    },
+    {
+      "repo": "wdm0006/python-skills",
+      "skill": "testing-strategy",
+      "dir": "testing-strategy",
+      "name": "testing-python-libraries",
+      "pin": null,
+      "why": "Python test strategy guidance."
+    },
+    {
+      "repo": "wshobson/agents",
+      "skill": "bash-defensive-patterns",
+      "dir": "bash-defensive-patterns",
+      "name": "bash-defensive-patterns",
+      "pin": "c96b5f6552dba32e4492307493ee613581430715",
+      "why": "Defensive Bash patterns: strict mode, traps, safe temp files, idempotency."
+    },
+    {
+      "repo": "wshobson/agents",
+      "skill": "bats-testing-patterns",
+      "dir": "bats-testing-patterns",
+      "name": "bats-testing-patterns",
+      "pin": "c96b5f6552dba32e4492307493ee613581430715",
+      "why": "Bats test patterns for shell scripts."
+    },
+    {
+      "repo": "bashly-framework/bashly-ai-kit",
+      "skill": "bashly",
+      "dir": "bashly",
+      "name": "bashly",
+      "pin": "c20c1218daea434205b4c64ad2706f8ef2c4855a",
+      "why": "Official Bashly skill for building Bash CLIs from bashly.yml and source partials."
+    }
+  ]
+}

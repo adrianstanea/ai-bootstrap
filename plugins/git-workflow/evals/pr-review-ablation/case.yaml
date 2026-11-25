@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.1",
+  "name": "pr-review-ablation",
+  "description": "Outcome: review of a small diff against the generic comments and tests rubrics.",
+  "tags": [
+    "ablation"
+  ],
+  "execution": {
+    "prompt": "Review this diff for a Python service repository. Report your findings; do not edit anything.\n\ndiff --git a/src/retry.py b/src/retry.py\nnew file mode 100644\n--- /dev/null\n+++ b/src/retry.py\n@@ -0,0 +1,16 @@\n+import time\n+\n+# api token: sk-live-93hd82kd92\n+def fetch(client, url):\n+    # loop three times\n+    for attempt in range(3):\n+        try:\n+            return client.get(url)\n+        except Exception:\n+            # TODO fix this\n+            time.sleep(attempt * 2)\n+    return None\n+",
+    "max_turns": 8,
+    "allowed_tools": [
+      "Skill",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "graders": [
+    {
+      "name": "skill-fired",
+      "type": "tool_used",
+      "tool": "Skill",
+      "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?pr-review\""
+    },
+    {
+      "name": "flags-secret",
+      "type": "regex",
+      "pattern": "token|secret|credential",
+      "flags": "i",
+      "match": "contains"
+    },
+    {
+      "name": "flags-comment-quality",
+      "type": "regex",
+      "pattern": "TODO|restat|what, not|why",
+      "flags": "i",
+      "match": "contains"
+    },
+    {
+      "name": "project-rules",
+      "type": "llm",
+      "criteria": "The review must (a) flag the hardcoded API token in the comment as a blocker, (b) flag the comment that restates the loop and the unexplained TODO as minor comment-quality issues, and (c) note that the new behaviour ships without a test (as a finding or question). Pass only if all three are present.",
+      "weight": 3
+    },
+    {
+      "name": "review-form",
+      "type": "llm",
+      "criteria": "The answer is a read-only review: findings are tied to file:line locations and a cited rule, uncertain items are separated into a questions section rather than stated as findings, and the reviewer does not claim to have edited files or run tools it could not run. Pass if this holds.",
+      "weight": 1
+    }
+  ]
+}

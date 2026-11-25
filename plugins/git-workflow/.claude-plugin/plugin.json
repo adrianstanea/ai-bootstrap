@@ -1,0 +1,10 @@
+{
+  "description": "Git workflow skills and PR reviewer agent: commit messages, commit planning, pull requests, and review.",
+  "keywords": [
+    "git",
+    "pull-request",
+    "review"
+  ],
+  "name": "git-workflow",
+  "version": "0.1.0"
+}

@@ -1,0 +1,3 @@
+interface:
+  display_name: "Graphviz Diagrams"
+  short_description: "Write, structure, and embed Graphviz (DOT) diagrams for project documentation, following layout and style best practices."
