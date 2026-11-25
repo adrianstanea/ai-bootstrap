@@ -138,7 +138,7 @@ install_skills() {
         cmd=("$gh" skill install "$repo" "$skill" --agent claude-code --scope user --force)
         [[ "$pin" != "-" ]] && cmd+=(--pin "$pin")
         if run "${cmd[@]}" </dev/null >/dev/null 2>&1; then
-            echo "-> $repo $skill${pin#-}"
+            if [[ "$pin" == "-" ]]; then echo "-> $repo $skill"; else echo "-> $repo $skill @${pin:0:12}"; fi
         else
             echo "error: failed to install $repo $skill" >&2
             FAILED=1
