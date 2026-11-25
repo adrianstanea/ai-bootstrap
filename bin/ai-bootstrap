@@ -9,10 +9,12 @@
 #         1. link the ai-hooks launcher into ~/.local/bin
 #         2. import claude/CLAUDE.md from a managed block in ~/.claude/CLAUDE.md
 #         3. merge claude/settings.fragment.json into ~/.claude/settings.json
-#         4. register this checkout as the "adrianstanea" plugin marketplace and install its
+#         4. link the same rules into ~/.copilot/instructions and add the policy hook to
+#            ~/.copilot/hooks (COPILOT_HOME moves both)
+#         5. register this checkout as the "adrianstanea" plugin marketplace and install its
 #            plugins at user scope (needs the claude CLI)
-#         5. install external-skills.json at user scope (needs gh >= 2.90)
-#         6. install the global SessionStart hook that re-syncs linked worktrees
+#         6. install external-skills.json at user scope (needs gh >= 2.90)
+#         7. install the global SessionStart hook that re-syncs linked worktrees
 #   ai-bootstrap project --config <config-repo> --target <checkout> [options]
 #       Configure one checkout from a project config repo; see sync/bootstrap.sh --help.
 #
@@ -40,7 +42,7 @@ run() {
 }
 
 link_launcher() {
-    echo "== 1/6 ai-hooks on PATH"
+    echo "== 1/7 ai-hooks on PATH"
     run mkdir -p "$HOME/.local/bin"
     run ln -sfn "$LAUNCHER" "$HOME/.local/bin/ai-hooks"
     case ":$PATH:" in
@@ -50,7 +52,7 @@ link_launcher() {
 }
 
 import_rules() {
-    echo "== 2/6 personal rules in ~/.claude/CLAUDE.md"
+    echo "== 2/7 personal rules in ~/.claude/CLAUDE.md"
     local file="$HOME/.claude/CLAUDE.md" block
     block="$BEGIN_MARK"$'\n'"@$ROOT/claude/CLAUDE.md"$'\n'"$END_MARK"
     if [[ $DRY -eq 1 ]]; then
@@ -79,15 +81,28 @@ PY
 }
 
 merge_settings() {
-    echo "== 3/6 ~/.claude/settings.json"
+    echo "== 3/7 ~/.claude/settings.json"
     local args=("$ROOT/claude/settings.fragment.json" "$HOME/.claude/settings.json"
         --set "AI_HOOKS=$LAUNCHER")
     [[ $DRY -eq 1 ]] && args+=(--dry-run)
     python3 -I "$ROOT/claude/merge_settings.py" "${args[@]}"
 }
 
+setup_copilot() {
+    echo "== 4/7 Copilot personal instructions and hooks"
+    local home="${COPILOT_HOME:-$HOME/.copilot}"
+    run mkdir -p "$home/instructions" "$home/hooks"
+    run ln -sfn "$ROOT/claude/CLAUDE.md" "$home/instructions/ai-bootstrap.instructions.md"
+    if [[ $DRY -eq 1 ]]; then
+        echo "[dry-run] write $home/hooks/ai-bootstrap.json"
+        return 0
+    fi
+    sed "s|@AI_HOOKS@|$LAUNCHER|" "$ROOT/copilot/user-hooks.json" > "$home/hooks/ai-bootstrap.json"
+    echo "$home/hooks/ai-bootstrap.json: written"
+}
+
 install_plugins() {
-    echo "== 4/6 plugins from the $MARKETPLACE marketplace"
+    echo "== 5/7 plugins from the $MARKETPLACE marketplace"
     local claude="${CLAUDE_BIN:-${CLAUDE_CODE_EXECPATH:-claude}}"
     if ! command -v "$claude" >/dev/null 2>&1; then
         echo "SKIPPED plugins: claude CLI not found (set CLAUDE_BIN)"
@@ -112,7 +127,7 @@ for p in json.load(open(sys.argv[1]))["plugins"]: print(p["name"])' \
 }
 
 install_skills() {
-    echo "== 5/6 external skills (user scope)"
+    echo "== 6/7 external skills (user scope)"
     local gh="${GH_BIN:-gh}"
     if ! command -v "$gh" >/dev/null 2>&1; then
         echo "SKIPPED external skills: gh not found"
@@ -134,7 +149,7 @@ for s in json.load(open(sys.argv[1]))["skills"]:
 }
 
 install_worktree_sync() {
-    echo "== 6/6 global worktree sync hook"
+    echo "== 7/7 global worktree sync hook"
     run "$ROOT/sync/install-global-worktree-sync.sh"
 }
 
@@ -154,6 +169,7 @@ cmd_user() {
     link_launcher
     import_rules
     merge_settings
+    setup_copilot
     [[ $skip_plugins -eq 1 ]] && echo "SKIPPED plugins (--skip-plugins)" || install_plugins
     [[ $skip_skills -eq 1 ]] && echo "SKIPPED external skills (--skip-skills)" || install_skills
     [[ $skip_sync -eq 1 ]] && echo "SKIPPED worktree sync (--skip-worktree-sync)" \

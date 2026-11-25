@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "type": "command",
+        "bash": "@AI_HOOKS@ hook PreToolUse",
+        "timeoutSec": 10
+      }
+    ]
+  }
+}

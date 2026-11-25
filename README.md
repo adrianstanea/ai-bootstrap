@@ -6,7 +6,7 @@ what is specific to it.
 
 | Layer | Lives in | Holds |
 | --- | --- | --- |
-| Machine | this repo, installed by `ai-bootstrap user` | personal rules, user settings, plugins, skills, the `ai-hooks` engine |
+| Machine | this repo, installed by `ai-bootstrap user` | personal rules (Claude Code and Copilot), user settings, plugins, skills, the `ai-hooks` engine |
 | Project | the project, or a separate config repo synced into it | `.ai-hooks.toml`, project checks, project rules and plugins |
 
 Project rules override personal ones where they conflict.
@@ -27,9 +27,12 @@ git clone https://github.com/adrianstanea/ai-bootstrap ~/.local/share/ai-bootstr
 2. imports [claude/CLAUDE.md](claude/CLAUDE.md) from a managed block in `~/.claude/CLAUDE.md`;
 3. merges [claude/settings.fragment.json](claude/settings.fragment.json) into
    `~/.claude/settings.json`, adding missing keys and keeping existing values;
-4. registers this checkout as the `adrianstanea` plugin marketplace and installs its plugins;
-5. installs [external-skills.json](external-skills.json) at user scope (`gh` 2.90 or newer);
-6. registers a SessionStart hook that re-syncs linked worktrees of synced projects.
+4. links the same rules to `~/.copilot/instructions/ai-bootstrap.instructions.md` and writes the
+   policy hook to `~/.copilot/hooks/ai-bootstrap.json` for Copilot CLI and VS Code (both under
+   `$COPILOT_HOME` when set);
+5. registers this checkout as the `adrianstanea` plugin marketplace and installs its plugins;
+6. installs [external-skills.json](external-skills.json) at user scope (`gh` 2.90 or newer);
+7. registers a SessionStart hook that re-syncs linked worktrees of synced projects.
 
 Pass `--dry-run`, `--skip-plugins`, `--skip-skills` or `--skip-worktree-sync` to limit it.
 

@@ -109,6 +109,23 @@ class RenderTest(unittest.TestCase):
         decision = json.loads(out)["hookSpecificOutput"]
         self.assertEqual((rc, decision["permissionDecision"]), (0, "deny"))
 
+    def test_pre_tool_deny_is_also_top_level_for_copilot_cli(self):
+        rc, out, _ = self._render(Outcome(blocked=True, message="no"), "pre-tool")
+        payload = json.loads(out)
+        self.assertEqual(
+            (rc, payload["permissionDecision"], payload["permissionDecisionReason"]),
+            (0, "deny", "no"),
+        )
+
+    def test_copilot_cli_payload_with_string_tool_args_is_denied(self):
+        from ai_hooks import harness
+
+        event = harness.normalize(
+            "preToolUse",
+            {"cwd": "/tmp", "toolName": "bash", "toolArgs": '{"command": "gh pr create -t x"}'},
+        )
+        self.assertEqual((event.stage, event.is_shell, event.command), ("pre-tool", True, "gh pr create -t x"))
+
     def test_warnings_are_a_system_message_without_blocking(self):
         rc, out, err = self._render(Outcome(warnings=["careful"]), "post-tool")
         self.assertEqual((rc, json.loads(out), err), (0, {"systemMessage": "careful"}, ""))

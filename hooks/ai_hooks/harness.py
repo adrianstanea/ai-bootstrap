@@ -5,7 +5,9 @@
 Claude Code, VS Code (Local agent), and Copilot CLI/cloud agent send similar JSON with
 different field and tool names, and VS Code ignores matchers, so the harness is not configured:
 it is read from the payload. Blocking is rendered as JSON `decision: block` (documented for
-Stop and PostToolUse by all three) unless a registration pins `--block-mode exit2`.
+Stop and PostToolUse by all three) unless a registration pins `--block-mode exit2`. A pre-tool
+deny carries the decision both in Claude's hookSpecificOutput and at the top level, where Copilot
+CLI's camelCase hook format reads it.
 """
 
 from __future__ import annotations
@@ -143,6 +145,10 @@ def render(outcome: Outcome, stage: str, block_mode: str, out: TextIO, err: Text
                 "permissionDecision": "deny",
                 "permissionDecisionReason": outcome.message,
             }
+            # Copilot CLI hooks in its camelCase format read the decision at the top level;
+            # Claude Code and VS Code read hookSpecificOutput and ignore these keys.
+            payload["permissionDecision"] = "deny"
+            payload["permissionDecisionReason"] = outcome.message
         else:
             payload["decision"] = "block"
             payload["reason"] = outcome.message
